@@ -1,0 +1,7 @@
+name = Groupanizer Snapshots
+description = For taking data snapshots
+core = 7.x
+files[] = g3snapshot.module
+dependencies[] = entity
+dependencies[] = taxonomy
+dependencies[] = uuid

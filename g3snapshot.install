@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * hook_default_permissions
+ */
+function g3snapshot_default_permissions() {
+
+  $permissions = array();
+
+  $permissions['administer snapshot'] = array(
+    'name' => 'administer snapshot',
+    'roles' => array(
+      'Site Admin' => 'Site Admin',
+    ),
+    'module' => 'g3snapshot',
+  );
+
+  return $permissions;
+}
+
+/**
+ * hook_schema
+ */
+function g3snapshot_schema() {
+
+  $schema['g3snapshot'] = array(
+    'description' => 'Logs snapshots to be used in history charts',
+    'fields' => array(
+      'sid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'entity_type' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ),
+      'entity_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'date' => array(
+        'description' => 'Log the year and month, in the form: 2016-01',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ),
+      'week' => array(
+        'description' => 'Week number of the year',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'sid' => array('sid'),
+    ),
+  );
+
+  $schema['g3snapshot_data'] = array(
+    'description' => 'The formatted data for snapshots',
+    'fields' => array(
+      'sdid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ),
+      'data' => array(
+        'type' => 'varchar',
+        'length' => 256,
+        'not null' => FALSE,
+      ),
+    ),
+    'indexes' => array(
+      'sdid' => array('sdid'),
+    ),
+  );
+
+  return $schema;
+}

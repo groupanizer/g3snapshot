@@ -1,0 +1,84 @@
+<?php
+
+include_once 'g3snapshot.entity.inc';
+
+/**
+ * hook_menu
+ */
+function g3snapshot_menu() {
+
+  $items = array();
+
+  // admin
+  $items['g/admin/settings/snapshots'] = array(
+    'title' => t('Snapshot settings'),
+    'description' => t('Enable or disable taking data snapshots'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('g3snapshot_settings_form'),
+    'access arguments' => array('administer snapshot'),
+    'file' => 'g3snapshot.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_cron
+ */
+function g3snapshot_cron() {
+
+  // Save snapshot of opportunities and their stages
+  if( module_exists('ga_community') ) {
+
+    if( variable_get('g3snapshot_opportunities') ) {
+      $opps = entity_load('gc_opportunity');
+      $saved_opps = 0;
+      foreach( $opps AS $opp ) {
+        $goid = $opp->goid;
+        $dt = new DateTime();
+        $date = $dt->format('Y-m');
+        $week = $dt->format('W');
+
+        $query = new EntityFieldQuery();
+        $query->entityCondition('entity_type', 'g3snapshot')
+          ->propertyCondition('entity_type', 'gc_community')
+          ->propertyCondition('entity_id', $goid)
+          ->propertyCondition('date', $date)
+          ->propertyCondition('week', $week);
+        $result = $query->execute();
+
+        if (isset($result['g3snapshot'])) {
+          // Get id of existing snapshot to update
+          $sid = array_keys($result['g3snapshot'])[0];
+        } else {
+          // Create new snapshot if it doesn't exist
+          $snapshot = entity_create('g3snapshot', array(
+            'entity_type' => 'gc_community',
+            'entity_id' => $goid,
+            'date' => $date,
+            'week' => $week,
+          ));
+
+          $snapshot->save();
+          $sid = $snapshot->sid;
+        }
+
+        // Record this opportunity's stage
+        $data = db_merge('g3snapshot_data')
+          ->key(array('sid' => $sid, 'type' => 'stage'))
+          ->fields(array(
+            'sid' => $sid,
+    	      'type' => 'stage',
+            'data' => $opp->stage,
+        	))
+          ->execute();
+
+        if( $data ) { $saved_opps++; }
+      }
+
+      watchdog('g3snapshot', "{$saved_opps} Opportunity snapshots saved.");
+    }
+  }
+
+}
