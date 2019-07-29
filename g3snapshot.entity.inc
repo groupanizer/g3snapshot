@@ -62,7 +62,7 @@ class SnapshotAPIController extends EntityAPIController {
 
   }
 
-  public function save($entity) {
+  public function save($entity, ?DatabaseTransaction $transaction = NULL) {
     parent::save($entity);
   }
 

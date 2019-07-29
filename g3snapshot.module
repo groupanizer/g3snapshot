@@ -3,6 +3,18 @@
 include_once 'g3snapshot.entity.inc';
 
 /**
+ * hook_permissions
+ */
+function g3snapshot_permission() {
+  return array(
+    'administer snapshot' => array(
+      'title' => t('Administer Snapshot'),
+      'description' => t('Change settings for the snapshot module'),
+    )
+  );
+}
+
+/**
  * hook_menu
  */
 function g3snapshot_menu() {
